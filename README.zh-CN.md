@@ -77,11 +77,19 @@ VALORANT 中的跳跃通常会产生可被其他玩家听见的声音，因此�
 
 ![Replay Data Processing Workflow](assets/replay-processing-workflow.png)
 
-**回放数据处理流程。** 原始 `.vrf` 回放首先由 `vrfkit` 解析为结构化数据，然后与人工 Trial 记录进行对齐，最后用于 T1/T2、运动状态与图表分析。
+**实验输入与回放数据处理流程。** Logitech G HUB Macro 提供受控的 Crouch/Space 输入时序，VALORANT 记录生成 `.vrf` 回放，再由 `vrfkit` 将回放转换为结构化数据，并与人工 Trial 记录对齐，用于 T1/T2、运动状态和图表分析。
 
 解析摘要中未观察到 malformed packet 或 partial row。需要强调的是，数据成功解析并不代表所有游戏内部状态都已被解释，目前仍未直接识别出“跳跃声音触发”的内部回放字段。
 
-### 3.2 实验顺序
+### 3.2 使用 Logitech G HUB Macro 执行输入
+
+实验中的重复按键序列通过 **Logitech G HUB 的 Macro 功能**执行。G HUB 用于按照预设延迟重复发送 Crouch 与 Space/Jump 输入，包括名义上的 20 ms、300 ms Space 保持条件，以及 baseline 和 A 条件中使用的不同输入时序。
+
+报告中的 G HUB 延迟只被视为**预期输入计划**，并不直接假设这些设定值等于游戏实际处理到的时间。因此，本研究明确区分“宏中的名义设定值”和“回放中测得的实际值”。结果部分使用的 T1、T2、H、起跳状态和 Peak Z，均以回放中重建出的事件为分析依据，而不是只根据 G HUB 中填写的延迟进行判断。
+
+这种区分很重要，因为即使宏使用相同或相近的设定值，回放中仍可能落入不同的实际时序档位。因此，在本实验中，G HUB Macro 负责提供可重复的受控输入，而 `vrfkit` 解析出的回放数据负责提供实际测量结果。
+
+### 3.3 实验顺序
 
 1. 20 ms Space × 5
 2. 300 ms Space × 5
@@ -94,7 +102,7 @@ VALORANT 中的跳跃通常会产生可被其他玩家听见的声音，因此�
 
 五次近战攻击标记被定位在约 868.102–871.313 s，使错误 baseline 与正式 baseline 能够可靠分开。
 
-### 3.3 声音标签
+### 3.4 声音标签
 
 正式 baseline：
 

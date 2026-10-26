@@ -75,11 +75,19 @@ Replay parsing was performed with [`vrfkit`](https://github.com/yakisoba0728/vrf
 
 ![Replay Data Processing Workflow](assets/replay-processing-workflow.png)
 
-**Replay data processing workflow.** The raw `.vrf` replay is parsed with `vrfkit`; the exported structured tables are then aligned with the manual trial log and used for timing, movement-state, and figure generation.
+**Experimental input and replay-data workflow.** Logitech G HUB Macro provides the controlled Crouch/Space input schedule, VALORANT records the resulting `.vrf` replay, and `vrfkit` converts that replay into structured tables that are aligned with the manual trial log for timing, movement-state, and figure generation.
 
 The replay did not show malformed packets or partial rows in the parser summary. This does not mean every internal game state has been decoded; the jump-sound trigger itself has not yet been directly identified as a replay field.
 
-### 3.2 Experimental order
+### 3.2 Input execution with Logitech G HUB macros
+
+The repeated input sequences were executed using the **macro functionality in Logitech G HUB**. G HUB was used to issue controlled Crouch and Space/Jump key sequences with configured delay values, including the nominal 20 ms and 300 ms Space-hold conditions and the timing variants used in the baseline/A-condition tests.
+
+The configured macro delays are treated only as the **intended input schedule**. They are not assumed to be identical to the timing actually processed by the game. For this reason, the analysis distinguishes nominal macro settings from replay-measured values. T1, T2, H, takeoff state, and Peak Z reported in the results are based on the events reconstructed from the replay data rather than solely on the values entered in G HUB.
+
+This distinction is important because identical or nearby macro settings can still resolve to different observed timing states in the replay. The macro therefore serves as the controlled input source, while `vrfkit` replay data serve as the measurement source.
+
+### 3.3 Experimental order
 
 1. 20 ms Space × 5
 2. 300 ms Space × 5
@@ -92,7 +100,7 @@ The replay did not show malformed packets or partial rows in the parser summary.
 
 The five melee marker events were located around 868.102–871.313 s, which made it possible to separate the invalid baseline from the formal baseline reliably.
 
-### 3.3 Sound labels
+### 3.4 Sound labels
 
 For the formal baseline:
 

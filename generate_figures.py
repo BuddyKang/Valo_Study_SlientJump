@@ -49,23 +49,25 @@ ax.text(0.2,0.55,'Schematic only — not an actual gameplay frame.',fontsize=9)
 ax.set_title('Figure 1. Input Timing and Key Variable Diagram', loc='left', fontweight='bold')
 fig.tight_layout(); fig.savefig(ASSETS/'input-timing-diagram.png', dpi=200, bbox_inches='tight'); plt.close(fig)
 
-# Unnumbered workflow diagram: VRF -> vrfkit -> analysis
-fig, ax = plt.subplots(figsize=(13, 4.2))
-ax.set_xlim(0, 13); ax.set_ylim(0, 4.2); ax.axis('off')
+# Unnumbered workflow diagram: controlled macro input -> replay -> vrfkit -> analysis
+fig, ax = plt.subplots(figsize=(15, 4.4))
+ax.set_xlim(0, 15); ax.set_ylim(0, 4.4); ax.axis('off')
 boxes = [
-    (0.4, 1.35, 2.0, 1.15, 'VALORANT replay\n.vrf'),
-    (3.0, 1.35, 2.0, 1.15, 'vrfkit\nreplay parser'),
-    (5.6, 0.65, 2.6, 2.55, 'Parsed outputs\n\nmovement.parquet\nfields.parquet\nactors.parquet\nmanifest.json'),
-    (8.85, 1.35, 1.7, 1.15, 'Trial / event\nalignment'),
-    (11.15, 1.35, 1.45, 1.15, 'Analysis &\nfigures'),
+    (0.3, 1.45, 1.9, 1.15, 'Logitech G HUB\nMacro input'),
+    (2.65, 1.45, 1.9, 1.15, 'VALORANT\ntrial'),
+    (5.0, 1.45, 1.8, 1.15, 'Replay\n.vrf'),
+    (7.25, 1.45, 1.9, 1.15, 'vrfkit\nreplay parser'),
+    (9.6, 0.75, 2.4, 2.55, 'Parsed outputs\n\nmovement.parquet\nfields.parquet\nactors.parquet\nmanifest.json'),
+    (12.45, 1.45, 1.2, 1.15, 'Trial / event\nalignment'),
+    (14.05, 1.45, 0.8, 1.15, 'Analysis\n& figures'),
 ]
 for x, y0, w, h, text in boxes:
     ax.add_patch(FancyBboxPatch((x,y0), w,h, boxstyle='round,pad=0.04', fill=False, lw=1.5))
-    ax.text(x+w/2, y0+h/2, text, ha='center', va='center', fontsize=10)
-for x1, x2 in [(2.4,3.0),(5.0,5.6),(8.2,8.85),(10.55,11.15)]:
-    ax.annotate('', xy=(x2,1.93), xytext=(x1,1.93), arrowprops=dict(arrowstyle='->', lw=1.5))
-ax.set_title('Replay Data Processing Workflow', loc='left', fontweight='bold')
-ax.text(0.4,0.2,'vrfkit converts the .vrf replay into structured tables used for timing and movement analysis.', fontsize=9)
+    ax.text(x+w/2, y0+h/2, text, ha='center', va='center', fontsize=9)
+for x1, x2 in [(2.2,2.65),(4.55,5.0),(6.8,7.25),(9.15,9.6),(12.0,12.45),(13.65,14.05)]:
+    ax.annotate('', xy=(x2,2.02), xytext=(x1,2.02), arrowprops=dict(arrowstyle='->', lw=1.5))
+ax.set_title('Experimental Input and Replay Data Workflow', loc='left', fontweight='bold')
+ax.text(0.3,0.25,'G HUB supplies the controlled input schedule; vrfkit-derived replay data provide the measured timing and movement states.', fontsize=9)
 fig.tight_layout(); fig.savefig(ASSETS/'replay-processing-workflow.png', dpi=200, bbox_inches='tight'); plt.close(fig)
 
 # Figure 2: Space hold duration comparison
