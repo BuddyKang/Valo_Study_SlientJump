@@ -8,7 +8,7 @@
 
 ## 摘要
 
-本实验研究 VALORANT 中“无声跳”现象与输入时序及角色运动状态之间的关系，并尝试确定在保持无声的情况下能够达到的最高跳跃状态。实验控制 Crouch 与 Space/Jump 的输入时序，对不同 Space 按键持续时间和时间间隔进行重复测试，并利用解析后的游戏回放数据提取实际输入时间、角色运动轨迹和最高垂直位置（Peak Z）。这些客观数据随后与实验过程中人工记录的“有声/无声”结果进行对齐。
+本实验研究 VALORANT 中“无声跳”现象与输入时序及角色运动状态之间的关系，并尝试确定在保持无声的情况下能够达到的最高跳跃状态。实验控制 Crouch 与 Space/Jump 的输入时序，对不同 Space 按键持续时间和时间间隔进行重复测试，并利用解析后的游戏回放数据提取实际输入时间、角色运动轨迹和最高垂直位置（Peak Z）。VALORANT `.vrf` 回放的解析与 Parquet 导出使用 [`vrfkit`](https://github.com/yakisoba0728/vrfkit) 完成，随后再将这些结构化数据与实验过程中人工记录的“有声/无声”结果进行对齐。
 
 首先比较约 20 ms 与约 300 ms 的 Space 按键保持时间 H。在相同 Crouch 条件下，两种 H 并未产生明显不同的跳跃轨迹，因此 H 暂时不被认为是决定无声跳的主要变量。
 
@@ -57,7 +57,7 @@ VALORANT 中的跳跃通常会产生可被其他玩家听见的声音，因此�
 
 ---
 
-## 3. 实验环境与数据来源
+## 3. 实验环境、工具与数据来源
 
 ### 3.1 回放与解析数据
 
@@ -73,7 +73,13 @@ VALORANT 中的跳跃通常会产生可被其他玩家听见的声音，因此�
 | Partial rows | 0 |
 | 主要玩家主体 | 1 |
 
-分析使用了解析后的 movement、field/state、actor 与 manifest 数据。解析摘要中未观察到 malformed packet 或 partial row。需要强调的是，数据成功解析并不代表所有游戏内部状态都已被解释，目前仍未直接识别出“跳跃声音触发”的内部回放字段。
+本研究使用 [`vrfkit`](https://github.com/yakisoba0728/vrfkit) 对 VALORANT `.vrf` 回放进行解析。`vrfkit` 是一个用于解析 VALORANT 回放并导出 Parquet 数据的 Rust 工具。本实验通过它获得用于时序与运动分析的结构化 movement、field/state、actor 与 manifest 数据，主要输出包括 `movement.parquet`、`fields.parquet`、`actors.parquet` 与 `manifest.json`。
+
+![Replay Data Processing Workflow](assets/replay-processing-workflow.png)
+
+**回放数据处理流程。** 原始 `.vrf` 回放首先由 `vrfkit` 解析为结构化数据，然后与人工 Trial 记录进行对齐，最后用于 T1/T2、运动状态与图表分析。
+
+解析摘要中未观察到 malformed packet 或 partial row。需要强调的是，数据成功解析并不代表所有游戏内部状态都已被解释，目前仍未直接识别出“跳跃声音触发”的内部回放字段。
 
 ### 3.2 实验顺序
 
@@ -117,6 +123,10 @@ A 条件中，每一次均有声音。
 
 相比之下，普通跳与 Crouch 条件之间的差异更明显，说明角色蹲伏状态本身确实会改变回放中观察到的运动轨迹。
 
+![Figure 2. Space Hold Duration vs Vertical Displacement](assets/space-hold-comparison.png)
+
+**图 2. Space 保持时间与垂直位移。** 在同一种运动条件内，将名义 H 从 20 ms 增加到 300 ms，垂直位移几乎不变；相比之下，普通跳和 Crouch 条件之间仍保持明显差异。
+
 ### 4.2 正式 baseline：T1 与 T2
 
 | Trial | T1 (ms) | T2 (ms) | Peak Z | Sound |
@@ -137,17 +147,17 @@ A 条件中，每一次均有声音。
 - **94 ms：2/2 有声**
 - **101–102 ms：8/8 无声**
 
-![Figure 2. Formal Baseline T1 vs T2](assets/t1-t2-scatter.png)
+![Figure 3. Formal Baseline T1 vs T2](assets/t1-t2-scatter.png)
 
-**图 2. 正式 baseline 的 T1–T2 散点图。** T2 基本保持不变，而声音结果随着 T1 分组。
+**图 3. 正式 baseline 的 T1–T2 散点图。** T2 基本保持不变，而声音结果随着 T1 分组。
 
 ### 4.3 Trial 顺序
 
 Trial 1–7 全部落在 101–102 ms 档位，并且全部无声。Trial 8 降至约 94 ms，同时出现声音；Trial 9 回到约 101 ms，再次无声；Trial 10 再次降至约 94 ms，并再次有声。
 
-![Figure 3. Trial Order vs T1 and T2](assets/trial-order-t1-t2.png)
+![Figure 4. Trial Order vs T1 and T2](assets/trial-order-t1-t2.png)
 
-**图 3. Trial 顺序与 T1/T2。** “Y”表示有声音，“N”表示无声音。
+**图 4. Trial 顺序与 T1/T2。** “Y”表示有声音，“N”表示无声音。
 
 第 8、10 次是在回放对齐前就已经通过监听记录为有声的两次，而对齐后恰好都落在不同的 94 ms T1 档位，因此这个对应关系尤其重要。
 
@@ -156,9 +166,9 @@ Trial 1–7 全部落在 101–102 ms 档位，并且全部无声。Trial 8 降�
 - T1≈101–102 ms → Peak Z≈544.24 → 无声
 - T1≈94 ms → Peak Z≈544.97 → 有声
 
-![Figure 4. T1 vs Peak Z](assets/t1-vs-peak-z.png)
+![Figure 5. T1 vs Peak Z](assets/t1-vs-peak-z.png)
 
-**图 4. T1 与 Peak Z 的关系。** 正式 baseline 中，更高的 Peak Z 档位有声，而稍低的档位无声。
+**图 5. T1 与 Peak Z 的关系。** 正式 baseline 中，更高的 Peak Z 档位有声，而稍低的档位无声。
 
 两个 Peak Z 档位之间相差约 0.73 个坐标单位。在同一正式 baseline 条件下，这可以视为两个不同起跳状态之间可重复观察到的差异。
 
@@ -170,6 +180,10 @@ Trial 1–7 全部落在 101–102 ms 档位，并且全部无声。Trial 8 降�
 - T1≈94 ms，有声：起跳蹲深≈6.82
 
 更短 T1 的 A 状态还出现过 T1≈86 ms、蹲深≈6.25、Peak Z≈545.70，并且仍然有声音。
+
+![Figure 6. Observed Timing and Movement State Levels](assets/observed-state-levels.png)
+
+**图 6. 当前观察到的时序与运动状态档位。** 将 A 条件加入后，可以直观看到三个重复出现的状态层级：更早、更高且有声的 A 状态；94 ms 的 baseline 有声状态；以及较晚的 101–102 ms 无声状态。图中同时标出了对应的起跳蹲深档位。
 
 这些结果不能证明“蹲深直接控制声音”，但可以确认 T1、蹲伏状态、Peak Z 与声音在当前数据中同步变化。
 
@@ -269,7 +283,13 @@ T2 基本不变但声音发生变化；T1 则刚好在有声 Trial 中发生变�
 
 ---
 
-## 数据
+## 可复现性与数据
+
+### 回放解析工具
+
+本研究使用 [`vrfkit`](https://github.com/yakisoba0728/vrfkit) 完成回放数据提取。`vrfkit` 可以解析 VALORANT `.vrf` 网络回放并导出结构化 Parquet 数据，之后再使用 pandas 等工具进行分析。本仓库公开的是用于报告的汇总数据与绘图代码，目前不直接分发原始回放文件。
+
+### 公开数据
 
 用于公开图表的正式 baseline 数据：
 

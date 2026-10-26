@@ -8,7 +8,7 @@
 
 ## Abstract
 
-This experiment investigates the relationship between the silent-jump phenomenon in VALORANT, input timing, and character movement state, and attempts to identify the highest jump state that can be reached without producing an audible jump sound. The experiment controlled the timing relationship between Crouch and Space/Jump, tested different Space hold durations, and then used parsed replay data to recover actual input timing, movement trajectory, and maximum vertical position (Peak Z). These measurements were aligned with manually recorded audible/silent outcomes.
+This experiment investigates the relationship between the silent-jump phenomenon in VALORANT, input timing, and character movement state, and attempts to identify the highest jump state that can be reached without producing an audible jump sound. The experiment controlled the timing relationship between Crouch and Space/Jump, tested different Space hold durations, and then used parsed replay data to recover actual input timing, movement trajectory, and maximum vertical position (Peak Z). VALORANT `.vrf` replay parsing and Parquet export were performed with [`vrfkit`](https://github.com/yakisoba0728/vrfkit), and the resulting structured data were aligned with manually recorded audible/silent outcomes.
 
 The Space-duration comparison found that changing H from approximately 20 ms to approximately 300 ms did not meaningfully change the jump trajectory under the same Crouch condition. In the formal 10-trial baseline, trials 8 and 10 were audible while the other eight were silent. Replay alignment showed that T2 remained approximately 156 ms, while T1 separated the two outcomes: T1≈94 ms was audible and T1≈101–102 ms was silent.
 
@@ -55,7 +55,7 @@ Peak Z is an absolute replay coordinate. It should not automatically be interpre
 
 ---
 
-## 3. Experimental Environment and Data
+## 3. Experimental Environment, Tooling, and Data
 
 ### 3.1 Replay and parsed files
 
@@ -71,7 +71,13 @@ Peak Z is an absolute replay coordinate. It should not automatically be interpre
 | Partial rows | 0 |
 | Main player subjects | 1 |
 
-The analysis used parsed replay outputs including movement, field/state, actor, and manifest data. The replay did not show malformed packets or partial rows in the parser summary. This does not mean every internal game state has been decoded; the jump-sound trigger itself has not yet been directly identified as a replay field.
+Replay parsing was performed with [`vrfkit`](https://github.com/yakisoba0728/vrfkit), a Rust toolkit for parsing VALORANT `.vrf` replay files and exporting their contents to Parquet. In this study, `vrfkit` provided the structured movement, field/state, actor, and manifest data used for timing and movement analysis. The relevant outputs included `movement.parquet`, `fields.parquet`, `actors.parquet`, and `manifest.json`.
+
+![Replay Data Processing Workflow](assets/replay-processing-workflow.png)
+
+**Replay data processing workflow.** The raw `.vrf` replay is parsed with `vrfkit`; the exported structured tables are then aligned with the manual trial log and used for timing, movement-state, and figure generation.
+
+The replay did not show malformed packets or partial rows in the parser summary. This does not mean every internal game state has been decoded; the jump-sound trigger itself has not yet been directly identified as a replay field.
 
 ### 3.2 Experimental order
 
@@ -115,6 +121,10 @@ Under the same Crouch condition, increasing H from approximately 20 ms to approx
 
 The difference between normal jump and Crouch-condition jump is much larger, confirming that crouch state changes the observed movement trajectory.
 
+![Figure 2. Space Hold Duration vs Vertical Displacement](assets/space-hold-comparison.png)
+
+**Figure 2. Space hold duration vs vertical displacement.** Within each movement condition, changing nominal H from 20 ms to 300 ms leaves vertical displacement essentially unchanged, while the normal-jump and Crouch-condition trajectories remain clearly separated.
+
 ### 4.2 Formal baseline: T1 and T2
 
 | Trial | T1 (ms) | T2 (ms) | Peak Z | Sound |
@@ -135,17 +145,17 @@ T2 stays at approximately 156 ms in all ten formal baseline trials. T1 separates
 - **94 ms:** 2/2 audible
 - **101–102 ms:** 8/8 silent
 
-![Figure 2. Formal Baseline T1 vs T2](assets/t1-t2-scatter.png)
+![Figure 3. Formal Baseline T1 vs T2](assets/t1-t2-scatter.png)
 
-**Figure 2. Formal baseline T1 vs T2.** T2 remains effectively fixed, while sound outcome separates by T1.
+**Figure 3. Formal baseline T1 vs T2.** T2 remains effectively fixed, while sound outcome separates by T1.
 
 ### 4.3 Trial order
 
 Trials 1–7 are all in the 101–102 ms state and are silent. Trial 8 drops to 94 ms and becomes audible. Trial 9 returns to 101 ms and becomes silent again. Trial 10 drops to 94 ms and is audible again.
 
-![Figure 3. Trial Order vs T1 and T2](assets/trial-order-t1-t2.png)
+![Figure 4. Trial Order vs T1 and T2](assets/trial-order-t1-t2.png)
 
-**Figure 3. Trial order vs T1/T2.** “Y” indicates an audible trial; “N” indicates a silent trial.
+**Figure 4. Trial order vs T1/T2.** “Y” indicates an audible trial; “N” indicates a silent trial.
 
 The audible trials were identified by listening before replay alignment. Their later alignment with the distinct 94 ms T1 level is therefore especially important.
 
@@ -154,9 +164,9 @@ The audible trials were identified by listening before replay alignment. Their l
 - T1≈101–102 ms → Peak Z≈544.24 → silent
 - T1≈94 ms → Peak Z≈544.97 → audible
 
-![Figure 4. T1 vs Peak Z](assets/t1-vs-peak-z.png)
+![Figure 5. T1 vs Peak Z](assets/t1-vs-peak-z.png)
 
-**Figure 4. T1 vs Peak Z.** In the formal baseline, the higher Peak Z state is audible, while the slightly lower state is silent.
+**Figure 5. T1 vs Peak Z.** In the formal baseline, the higher Peak Z state is audible, while the slightly lower state is silent.
 
 The difference between the two Peak Z levels is approximately 0.73 coordinate units. Under the same formal baseline conditions, this is a repeatable observable difference between the two takeoff states.
 
@@ -168,6 +178,10 @@ Replay alignment also showed different crouch depths near takeoff:
 - T1≈94 ms, audible: crouch depth ≈6.82
 
 A shorter-T1 A state also appeared around T1≈86 ms, crouch depth≈6.25, with Peak Z≈545.70, and remained audible.
+
+![Figure 6. Observed Timing and Movement State Levels](assets/observed-state-levels.png)
+
+**Figure 6. Observed timing and movement state levels.** Adding the A condition shows three repeated state levels: an earlier high/audible A state, the 94 ms baseline audible state, and the later 101–102 ms silent state. The labels include the corresponding observed crouch-depth level.
 
 These observations do not prove that crouch depth directly controls the sound. They show that T1, crouch state, Peak Z, and Sound change together in the current data.
 
@@ -267,7 +281,13 @@ The most important unresolved question is whether the 7–8 ms boundary reflects
 
 ---
 
-## Data
+## Reproducibility and Data
+
+### Replay parser
+
+Replay extraction for this study was performed with [`vrfkit`](https://github.com/yakisoba0728/vrfkit). `vrfkit` parses VALORANT `.vrf` network replays and exports structured Parquet data that can be analyzed with tools such as pandas. This repository contains the derived summary data and plotting code used for the public figures; it does not currently redistribute the original replay.
+
+### Public data
 
 The formal baseline data used for the public figures are available at:
 
